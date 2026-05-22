@@ -1,0 +1,15 @@
+langchain
+pydantic
+langchain-openai
+langchain-groq
+langchain-community
+langchain-core
+python-dotenv
+sentence-transformers
+faiss-cpu
+langchain-huggingface
+langchain-text-splitters
+pypdf
+streamlit
+torchvision
+docx2txt
