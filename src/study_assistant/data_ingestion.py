@@ -1,7 +1,7 @@
 import os
 import sys
 from src.study_assistant import logger, CustomException
-from langchain_community.document_loaders import PyPDFLoader, UnstructuredImageLoader, Docx2txtLoader
+from langchain_community.document_loaders import PyPDFLoader, Docx2txtLoader
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
@@ -32,9 +32,6 @@ class DataIngestion:
 
         elif suffix == ".docx":
             loader = Docx2txtLoader(filepath)
-
-        elif suffix.lower() in [".png", ".jpg", ".jpeg"]:
-            loader = UnstructuredImageLoader(filepath)
 
         else:
             raise FileNotFoundError(

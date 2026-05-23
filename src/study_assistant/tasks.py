@@ -1,6 +1,8 @@
-from src.study_assistant import logger,CustomException
+import json
+from src.study_assistant.schemas import FlashcardResponse, MCQResponse, RevisionResponse
+from src.study_assistant import logger, CustomException
 
-def generate_summary(llm,docs):
+def generate_summary(llm, docs):
     context = "\n\n".join([d.page_content for d in docs])
 
     prompt = f"""
@@ -29,109 +31,113 @@ Output format:
 
     return llm.invoke(prompt).content
 
-def generate_mcqs(llm,docs):
+
+def generate_mcqs(llm, docs):
     context = "\n\n".join([d.page_content for d in docs])
 
     prompt = f"""
 You are an expert exam paper setter.
 
-Create 5 high-quality multiple choice questions based on the content below.
-
-Instructions:
-- Questions should test understanding, not just memorization
-- Include 4 options (A, B, C, D)
-- Only one correct answer
-- Add a clear explanation for each answer
-- Make questions similar to competitive exams
+Create 5 high-quality multiple choice questions.
 
 Content:
 {context}
 
-Output format:
+Return ONLY valid JSON:
 
-Q1:
-Question text
-A)
-B)
-C)
-D)
-Answer:
-Explanation:
+{{
+  "questions": [
+    {{
+      "question": "...",
+      "options": ["A", "B", "C", "D"],
+      "answer": "A",
+      "explanation": "..."
+    }}
+  ]
+}}
+"""
 
-(repeat for 10 questions)
-    """
+    response = llm.invoke(prompt).content
 
-    return llm.invoke(prompt).content
+    try:
+        data = json.loads(response)
+        validated = MCQResponse(**data)
+        return validated.questions
 
-def generate_flashcards(llm,docs):
+    except Exception as e:
+        print("MCQ Parsing Error:", e)
+        return []
+
+def generate_flashcards(llm, docs):
     context = "\n\n".join([d.page_content for d in docs])
 
     prompt = f"""
- You are a study assistant specialized in active recall learning.
-
-Convert the following content into flashcards.
-
-Instructions:
-- Each flashcard should test one concept
-- Keep answers short and precise
-- Focus on definitions, formulas, and key facts
-- Avoid long explanations
+Convert into flashcards.
 
 Content:
 {context}
 
-Output format:
+Return ONLY valid JSON:
 
-Q:
-A:
-
-Q:
-A:
-    """
-
-    return llm.invoke(prompt).content
-
-
-def generate_revision_notes(docs, llm):
-    """
-    Generate exam-focused revision notes from retrieved documents
-    """
-
-    # Combine retrieved chunks
-    context = "\n\n".join([doc.page_content for doc in docs])
-
-    prompt = f"""
-You are an expert teacher helping a student revise quickly before an exam.
-
-Your task is to convert the given content into a highly concise and effective revision guide.
-
-Instructions:
-- Include only the most important concepts
-- Use very short bullet points (no long paragraphs)
-- Highlight key terms, formulas, and definitions
-- Prioritize what is most likely to appear in exams
-- Remove unnecessary explanations
-- Make it easy to revise in under 2–3 minutes
-
-Content:
-{context}
-
-Output format:
-
-Title
-
-Key Concepts:
-- 
-
-Important Definitions:
-- 
-
-Formulas / Key Facts:
-- 
-
-Exam Focus Points:
--   
+{{
+  "flashcards": [
+    {{
+      "question": "...",
+      "answer": "..."
+    }}
+  ]
+}}
 """
 
-    return llm.invoke(prompt).content
-    
+    response = llm.invoke(prompt).content
+
+    try:
+        import json
+        import re
+
+        cleaned = re.sub(r"```json|```", "", response).strip()
+        data = json.loads(cleaned)
+
+        validated = FlashcardResponse(**data)
+        return validated.flashcards
+
+    except Exception as e:
+        print("Flashcard Error:", e)
+        return []
+
+
+def generate_revision_notes(llm, docs):
+    context = "\n\n".join([d.page_content for d in docs])
+
+    prompt = f"""
+Create a revision guide.
+
+Content:
+{context}
+
+Return ONLY valid JSON:
+
+{{
+  "title": "...",
+  "key_concepts": ["..."],
+  "definitions": ["..."],
+  "formulas": ["..."],
+  "exam_points": ["..."]
+}}
+"""
+
+    response = llm.invoke(prompt).content
+
+    try:
+        import json
+        import re
+
+        cleaned = re.sub(r"```json|```", "", response).strip()
+        data = json.loads(cleaned)
+
+        validated = RevisionResponse(**data)
+        return validated
+
+    except Exception as e:
+        print("Revision Error:", e)
+        return None

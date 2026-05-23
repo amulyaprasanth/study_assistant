@@ -37,6 +37,13 @@ if "data_ingestion" not in st.session_state:
 if "docs_loaded" not in st.session_state:
     st.session_state["docs_loaded"] = False
 
+# QUIZ STATE
+if "quiz" not in st.session_state:
+    st.session_state["quiz"] = None
+    st.session_state["current_q"] = 0
+    st.session_state["score"] = 0
+    st.session_state["answered"] = False
+
 # ---------------- FILE UPLOAD ----------------
 uploaded_files = st.file_uploader(
     "Upload files",
@@ -83,9 +90,7 @@ with col1:
                     except Exception as e:
                         st.error(f"Error processing {uploaded_file.name}: {e}")
 
-                # Add to vector DB
                 st.session_state["vectorstore"].add_documents(all_docs)
-
                 st.session_state["docs_loaded"] = True
 
                 st.success(
@@ -108,7 +113,7 @@ if st.session_state["docs_loaded"]:
 
     tab1, tab2, tab3, tab4 = st.tabs([
         "🧠 Summary",
-        "🧩 MCQs",
+        "🧩 Quiz",
         "🗂 Flashcards",
         "⚡ Revision"
     ])
@@ -123,23 +128,76 @@ if st.session_state["docs_loaded"]:
                     "main concepts and explanations"
                 )
 
-                result = generate_summary(st.session_state["llm"],docs=docs)
+                result = generate_summary(
+                    st.session_state["llm"], docs
+                )
 
                 st.markdown(result)
 
-    # ---------------- MCQs ----------------
+    # ---------------- QUIZ ----------------
     with tab2:
-        st.subheader("Generate MCQs")
+        st.subheader("🧩 Interactive Quiz")
 
-        if st.button("Generate MCQs"):
-            with st.spinner("Generating MCQs..."):
+        if st.button("Generate Quiz"):
+            with st.spinner("Generating quiz..."):
                 docs = st.session_state["vectorstore"].retrieve(
                     "important definitions and exam questions"
                 )
 
-                result = generate_mcqs(st.session_state["llm"], docs=docs)
+                quiz = generate_mcqs(
+                    st.session_state["llm"], docs
+                )
 
-                st.markdown(result)
+                if not quiz:
+                    st.error("Failed to generate quiz")
+                else:
+                    st.session_state["quiz"] = quiz
+                    st.session_state["current_q"] = 0
+                    st.session_state["score"] = 0
+                    st.session_state["answered"] = False
+
+        # SHOW QUIZ
+        if st.session_state["quiz"]:
+            quiz = st.session_state["quiz"]
+            idx = st.session_state["current_q"]
+
+            if idx < len(quiz):
+                q = quiz[idx]
+
+                st.write(f"### Q{idx + 1}: {q.question}")
+
+                selected = st.radio(
+                    "Choose your answer:",
+                    q.options,
+                    key=f"q_{idx}"
+                )
+
+                if st.button("Submit Answer"):
+
+                    if selected == q.answer:
+                        st.success("✅ Correct!")
+                        st.session_state["score"] += 1
+                    else:
+                        st.error(f"❌ Wrong! Correct: {q.answer}")
+
+                    st.info(f"💡 {q.explanation}")
+                    st.session_state["answered"] = True
+
+                if st.session_state["answered"]:
+                    if st.button("Next Question"):
+                        st.session_state["current_q"] += 1
+                        st.session_state["answered"] = False
+
+                st.progress((idx + 1) / len(quiz))
+
+            else:
+                st.success("🎉 Quiz Completed!")
+                st.write(
+                    f"Score: {st.session_state['score']} / {len(quiz)}"
+                )
+
+                if st.button("Restart Quiz"):
+                    st.session_state["quiz"] = None
 
     # ---------------- FLASHCARDS ----------------
     with tab3:
@@ -151,23 +209,52 @@ if st.session_state["docs_loaded"]:
                     "key facts and short concepts"
                 )
 
-                result = generate_flashcards(st.session_state["llm"], docs=docs)
+                cards = generate_flashcards(
+                    st.session_state["llm"], docs
+                )
 
-                st.markdown(result)
+                if not cards:
+                    st.error("Failed to generate flashcards")
+                else:
+                    for c in cards:
+                        st.write(f"**Q:** {c.question}")
+                        st.write(f"**A:** {c.answer}")
+                        st.divider()
 
     # ---------------- REVISION ----------------
     with tab4:
         st.subheader("Generate Revision Notes")
 
         if st.button("Generate Revision"):
-            with st.spinner("Generating revision notes..."):
+            with st.spinner("Generating revision..."):
                 docs = st.session_state["vectorstore"].retrieve(
                     "important concepts and key exam topics"
                 )
 
-                result = generate_revision_notes(llm=st.session_state["llm"], docs=docs)
+                rev = generate_revision_notes(
+                    st.session_state["llm"], docs
+                )
 
-                st.markdown(result)
+                if not rev:
+                    st.error("Failed to generate revision")
+                else:
+                    st.title(rev.title)
+
+                    st.subheader("Key Concepts")
+                    for x in rev.key_concepts:
+                        st.write(f"- {x}")
+
+                    st.subheader("Definitions")
+                    for x in rev.definitions:
+                        st.write(f"- {x}")
+
+                    st.subheader("Formulas")
+                    for x in rev.formulas:
+                        st.write(f"- {x}")
+
+                    st.subheader("Exam Points")
+                    for x in rev.exam_points:
+                        st.write(f"- {x}")
 
 else:
     st.info("👆 Upload and process files to start using the AI features.")
