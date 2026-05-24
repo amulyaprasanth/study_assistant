@@ -1,5 +1,6 @@
 
-const BASE = "https://studyassistant-production-a9a1.up.railway.app";
+const BASE =
+  "https://studyassistant-production-b04c.up.railway.app";
 
 export interface MCQItem {
   question: string;
