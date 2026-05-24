@@ -1,120 +1,161 @@
-
 # 📚 StudyMind AI
 
-An AI-powered study assistant that helps students learn smarter by transforming notes, PDFs, and study materials into summaries, flashcards, quizzes, and interactive Q&A sessions.
+An AI-powered study assistant that transforms your PDFs and notes into summaries, flashcards, quizzes, and revision guides — powered by LLaMA 3 via Groq and a RAG pipeline.
 
 ---
 
 ## 🚀 Features
 
-- 📄 Upload PDFs and study notes
-- 💬 Ask questions directly from your documents
-- 🧠 AI-powered summarization of study material
-- 🧩 Automatic MCQ generation for practice
-- 🗂️ Flashcard creation for quick revision
-- 📊 Interactive quiz mode
-- 🔍 Context-aware Q&A using advanced retrieval techniques
+| Feature                 | Description                                                                |
+| ----------------------- | -------------------------------------------------------------------------- |
+| 📄 **Document Upload**  | Upload PDF and DOCX files                                                  |
+| 🧠 **AI Summarization** | Structured, exam-ready notes from your content                             |
+| 🧩 **MCQ Quiz**         | Auto-generated multiple choice questions with explanations                 |
+| 🗂 **Flashcards**       | Key Q&A pairs for quick revision                                           |
+| ⚡ **Revision Notes**   | Structured guide with key concepts, definitions, formulas, and exam points |
+| 🔍 **RAG-powered Q&A**  | Context-aware retrieval using FAISS vector search                          |
 
 ---
 
 ## 🛠️ Tech Stack
 
 **Frontend**
-- React / Next.js
-- TailwindCSS
-- streamlit
 
-**Backend**
-- FastAPI / Node.js
+- React 19 + TypeScript
+- Vite
+- Custom CSS
+
+**Backend — FastAPI (primary)**
+
+- FastAPI + Uvicorn
+- FAISS (in-memory vector store)
+- HuggingFace Embeddings (`all-MiniLM-L6-v2`)
+- LangChain (RAG pipeline)
+- Groq API — LLaMA 3.1 8B Instant
+
+**Backend — Streamlit (alternate UI)**
+
+- Streamlit app (`app.py`) for standalone use without the React frontend
 
 **AI / ML**
-- Large Language Models (LLMs)
-- Embeddings for semantic search
-- Retrieval-Augmented Generation (RAG)
 
-**Database**
-- Vector Database (FAISS / Pinecone / Chroma)
-- PostgreSQL
+- Retrieval-Augmented Generation (RAG)
+- Sentence Transformers for semantic embeddings
+- Pydantic-validated structured LLM outputs
 
 ---
 
 ## 📁 Project Structure
 
-
 ```
-frontend/     # UI codebase
-backend/      # API and server logic
-ai_engine/    # AI pipelines and prompts
-data/         # Uploaded and processed files
+Study Assistant/
+├── backend/
+│   ├── api.py                  # FastAPI app (used by React frontend)
+│   ├── app.py                  # Streamlit app (standalone UI)
+│   ├── requirements.txt
+│   ├── .env                    # API keys (not committed)
+│   └── src/study_assistant/
+│       ├── llm.py              # Groq LLM initialization
+│       ├── vectorstore.py      # FAISS vector DB wrapper
+│       ├── data_ingestion.py   # PDF/DOCX loader + text splitter
+│       ├── tasks.py            # Summary, MCQ, flashcard, revision generators
+│       ├── schemas.py          # Pydantic response models
+│       └── __init__.py
+└── studyAssistant/             # React + TypeScript frontend
+    ├── src/
+    │   ├── api.ts              # API client (fetch wrappers)
+    │   ├── App.tsx             # Root component with tab navigation
+    │   └── components/
+    │       ├── Upload.tsx
+    │       ├── Summary.tsx
+    │       ├── Quiz.tsx
+    │       ├── Flashcards.tsx
+    │       └── Revision.tsx
+    └── package.json
 ```
-
 
 ---
 
-## ⚙️ Installation
+## ⚙️ Setup & Installation
+
+### Prerequisites
+
+- Python 3.10+
+- Node.js 18+
+- A [Groq API key](https://console.groq.com/)
 
 ### 1. Clone the repository
+
 ```bash
 git clone https://github.com/your-username/studymind-ai.git
-cd studymind-ai
-````
+cd "Study Assistant"
+```
 
 ### 2. Backend setup
 
 ```bash
 cd backend
+python -m venv .venv
+.venv\Scripts\activate        # Windows
+# source .venv/bin/activate   # macOS/Linux
+
 pip install -r requirements.txt
-python main.py
 ```
 
-### 3. Frontend setup
+Create a `.env` file in the `backend/` directory:
+
+```env
+GROQ_API_KEY=your_groq_api_key_here
+```
+
+### 3. Run the backend
+
+**FastAPI (for React frontend):**
 
 ```bash
-cd frontend
+uvicorn api:app --reload --port 8000
+```
+
+**Streamlit (standalone):**
+
+```bash
+streamlit run app.py
+```
+
+### 4. Frontend setup
+
+```bash
+cd studyAssistant
 npm install
 npm run dev
 ```
+
+The React app runs at `http://localhost:5173` and connects to the FastAPI backend at `http://localhost:8000`.
 
 ---
 
 ## 🔑 Environment Variables
 
-Create a `.env` file in the backend directory:
-
-```
-OPENAI_API_KEY=your_api_key
-DATABASE_URL=your_database_url
-VECTOR_DB_KEY=your_vector_db_key
-```
+| Variable       | Description                          |
+| -------------- | ------------------------------------ |
+| `GROQ_API_KEY` | Your Groq API key for LLaMA 3 access |
 
 ---
 
-## 📸 Screenshots
+## 📡 API Endpoints
 
-*(Add your project screenshots here once available)*
-
----
-
-## 🎯 Purpose
-
-This project is built to enhance learning efficiency using AI-driven tools for students preparing for exams.
-
----
-
-## 🤝 Contributing
-
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+| Method | Endpoint      | Description                         |
+| ------ | ------------- | ----------------------------------- |
+| `GET`  | `/status`     | Check API health and doc load state |
+| `POST` | `/upload`     | Upload PDF/DOCX files               |
+| `POST` | `/reset`      | Clear the vector database           |
+| `GET`  | `/summary`    | Generate a structured summary       |
+| `GET`  | `/quiz`       | Generate 5 MCQs with answers        |
+| `GET`  | `/flashcards` | Generate 8 flashcards               |
+| `GET`  | `/revision`   | Generate structured revision notes  |
 
 ---
 
 ## 📄 License
 
 This project is licensed under the MIT License.
-
----
-
-## ⭐ Acknowledgements
-
-Thanks to the open-source AI and developer community for tools and inspiration.
-
-
