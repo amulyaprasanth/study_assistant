@@ -1,4 +1,4 @@
-const BASE = "http://localhost:8000";
+const BASE = "studyassistant-production-a9a1.up.railway.app";
 
 export interface MCQItem {
   question: string;
