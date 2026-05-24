@@ -35,29 +35,138 @@ body {
 
 /* ===== APP LAYOUT ===== */
 .app {
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 24px 16px 60px;
+  padding: 0 16px 60px;
 }
 
-.app-header {
-  text-align: center;
-  margin-bottom: 32px;
+/* ===== HERO ===== */
+.hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: center;
+  min-height: 100vh;
+  padding: 48px 0 40px;
 }
 
-.app-header h1 {
-  font-size: 2.2rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, #6c63ff, #a78bfa);
+@media (max-width: 860px) {
+  .hero {
+    grid-template-columns: 1fr;
+    min-height: unset;
+    padding: 36px 0 32px;
+  }
+}
+
+/* Left column */
+.hero-left {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.hero-logo-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.hero-logo {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  border-radius: 20px;
+  filter: drop-shadow(0 0 24px rgba(108, 99, 255, 0.45));
+}
+
+.hero-text {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hero-title {
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1.1;
+  background: linear-gradient(135deg, #6c63ff 0%, #a78bfa 60%, #38bdf8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-.subtitle {
+.hero-tagline {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.hero-desc {
+  font-size: 0.97rem;
   color: var(--text-muted);
-  margin-top: 6px;
+  line-height: 1.7;
+  max-width: 440px;
+}
+
+.feature-list {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
+  margin-top: 8px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.feature-icon {
   font-size: 1rem;
+}
+
+/* Right column */
+.hero-right {
+  display: flex;
+  justify-content: center;
+}
+
+.upload-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 32px 28px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: var(--shadow);
+}
+
+.upload-card-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+.upload-card-sub {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+/* Remove the standalone upload-section margin inside the card */
+.upload-card .upload-section {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin-bottom: 0;
+}
+
+/* ===== MAIN (tabs area) ===== */
+.app-main {
+  padding-bottom: 20px;
 }
 
 /* ===== BUTTONS ===== */

@@ -41,7 +41,7 @@ app = FastAPI(title="Study Assistant API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://wisdomxai.netlify.app"],
+    allow_origins=["https://wisdomxai.netlify.app", "http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
